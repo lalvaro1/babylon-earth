@@ -40,7 +40,7 @@ class App {
         clouds.renderingGroupId = 1;        
         scatter.renderingGroupId = 2;                
 
-        camera.position = new Vector3(0,0.5,-0.8);
+        camera.position = new Vector3(0,0.5,-1.);
         camera.wheelPrecision = 200;
         camera.minZ = 0.1;
 
