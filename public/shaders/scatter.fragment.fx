@@ -13,18 +13,22 @@ uniform float time;
 const float PI = 3.14159265359;
 const float MAX = 10000.0;
 
+const float R_INNER = 0.47;
+const float R = 1.23;
+const float ph_ray = 0.015;
+const float ph_mie = 0.005;
+const float INTENSITY = 8.;
+const float TRANSITION = 0.3;
+const float TRANSITION_POWER = 4.;
+
+/*
 const float R_INNER = 0.48;
 const float R = R_INNER + 0.75;
 const float ph_ray = 0.015;
 const float ph_mie = 0.005;
 const float INTENSITY = 10.;
-
-/*
-const float R_INNER = 0.487;
-const float R = R_INNER + 0.5;
-const float ph_ray = 0.015;
-const float ph_mie = 0.005;
-const float INTENSITY = 10.;
+const float TRANSITION = 0.475;
+const float TRANSITION_POWER = 4.;
 */
 
 const int NUM_OUT_SCATTER = 8;
@@ -189,7 +193,7 @@ void main(void) {
 	vec3 projectedPoint = cameraPosition + cameraToPoint * dot(cameraToCenter, cameraToPoint);
 
 	float distToCenter = length(projectedPoint);
-	float alpha = pow(smoothstep(0.475, 0.5, distToCenter), 4.);
+	float alpha = pow(smoothstep(TRANSITION, 0.5, distToCenter), TRANSITION_POWER);
  
 	gl_FragColor.a = alpha;	
 }

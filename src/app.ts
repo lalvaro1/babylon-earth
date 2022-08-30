@@ -28,7 +28,9 @@ class App {
 
         var earth: Mesh = MeshBuilder.CreateSphere("earth", { diameter: 1 }, scene);
         var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.010 }, scene);   
-        
+        clouds.checkCollisions = true;
+
+
         const planeOptions = { width : 4, height: 4};
 
         var scatter: Mesh = MeshBuilder.CreatePlane("plane", planeOptions, scene); 
@@ -38,9 +40,13 @@ class App {
         clouds.renderingGroupId = 1;        
         scatter.renderingGroupId = 2;                
 
-        camera.position = new Vector3(0,0.5,-1.75);
+        camera.position = new Vector3(0,0.5,-0.8);
         camera.wheelPrecision = 200;
         camera.minZ = 0.1;
+
+        scene.collisionsEnabled = true;
+        camera.collisionRadius = new Vector3(0.2, 0.2, 0.2);
+        camera.checkCollisions = true;
 
         // earth
         var earthProceduralMaterial = createMaterial("earth", scene);  
@@ -84,7 +90,15 @@ class App {
 
         engine.runRenderLoop(() => {
 
+            console.log("cam: "+camera.position.x+" "+camera.position.y+" "+camera.position.z);
+
             const canvas = document.createElement("canvas");
+
+//            camera.update();
+            //const cameraLock = new Vector3(camera.position.x, camera.position.y, Math.min(camera.position.z, -0.9));
+            //camera.setPosition(cameraLock);
+  //          camera.update();
+
             const ratio : number = canvas.width/canvas.height;
             scatterProceduralMaterial.setFloat("ratio", ratio);
             earthProceduralMaterial.setFloat("time", time);
@@ -94,6 +108,8 @@ class App {
 
             engine.resize();
             scene.render();
+
+
         });
     }
 }
