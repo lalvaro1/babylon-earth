@@ -41,6 +41,7 @@ class App {
         var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.010 }, scene);   
         clouds.checkCollisions = true;
 
+        clouds.setEnabled(true);
 
         const planeOptions = { width : 4, height: 4};
 
@@ -72,31 +73,34 @@ class App {
         var cloudProceduralMaterial = createMaterial("clouds", scene);  
         clouds.material = cloudProceduralMaterial;
 
-        const cloudTexture = new Texture("./textures/clouds.jpg", scene);
-        const cloudTextureAlpha = new Texture("./textures/clouds_alpha.jpg", scene);        
+        const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
+        const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);        
 
-        cloudProceduralMaterial.setTexture("layer1", cloudTexture);
-        cloudProceduralMaterial.setTexture("layer2", cloudTextureAlpha);        
+        cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
+        cloudProceduralMaterial.setTexture("layer2", cloudAlphaTexture);        
         clouds.material.alpha = 0.0;
 
-        earthProceduralMaterial.setTexture("clouds", cloudTextureAlpha);     
+        earthProceduralMaterial.setTexture("clouds", cloudShadowTexture);     
         earth.material = earthProceduralMaterial;
 
         // scattering
-        var scatteringOptions = { intensity : { value : 8, min : 5, max : 50, step : 1 },
-        ray: { value : 0.015,  min : 0, max : 1, step : 0.025 },
-        mie : { value : 0.005, min : 0, max : 1, step : 0.025 },
-        inner : { value : 0.47,  min : 0.25, max : 2, step : 0.05 },
-        outter : { value : 1.23,  min : 1, max : 5, step : 0.25 },
-        transition_width : { value :  0.3,  min : 0, max : 1, step : 0.05 },
-        transition_power : { value : 4,  min : 0.25, max : 20, step : 0.01 }};
+        var scatteringOptions = { 
+            intensity : { value : 27, min : 0, max : 50, step : 0.5 },
+            ray: { value : 0.0022,  min : 0, max : 0.05, step : 0.00025 },
+            mie : { value : 0.002, min : 0.001, max : 0.05, step : 0.00025 },
+            inner : { value : 0.493,  min : 0.4, max : 0.6, step : 0.001 },
+            outter : { value : 1.23,  min : 1, max : 5, step : 0.01 },
+            transition_width : { value :  0.36,  min : 0, max : 0.5, step : 0.0025 },
+            transition_power : { value : 2.88,  min : 0.25, max : 20, step : 0.0025 }
+        };
 
         const scatterUniforms = new InteractiveFloatUniforms(scatteringOptions);
 
+        /*
         var settings = new dat.GUI();
         var folder1 = settings.addFolder('Scattering');
-
         scatterUniforms.addToSettingsFolder(folder1);
+        */
 
         var scatterProceduralMaterial = createMaterial("scatter", scene, scatterUniforms.getUniformList());   
         scatter.material = scatterProceduralMaterial;

@@ -14,13 +14,13 @@ const float PI = 3.14159265359;
 const float MAX = 10000.0;
 
 /*
-const float R_INNER = 0.47;
-const float R = 1.23;
-const float ph_ray = 0.015;
-const float ph_mie = 0.005;
-const float INTENSITY = 8.;
-const float TRANSITION = 0.3;
-const float TRANSITION_POWER = 4.;
+const float PARAM_intensity = 8.;
+const float PARAM_inner = 0.47;
+const float PARAM_outter 1.23;
+const float PARAM_ray = 0.015;
+const float PARAM_mie = 0.005;
+const float PARAM_transition_width = 0.3;
+const float PARAM_transition_power = 4.;
 */
 
 uniform float PARAM_intensity;
@@ -30,27 +30,6 @@ uniform float PARAM_ray;
 uniform float PARAM_mie;
 uniform float PARAM_transition_width;
 uniform float PARAM_transition_power;
-
-/*
-  var scatteringOptions = { intensity : { value : 8, min : 5, max : 50, step : 1 },
-        ray: { value : 0.015,  min : 0, max : 1, step : 0.025 },
-        mie : { value : 0.005, min : 0, max : 1, step : 0.025 },
-        inner : { value : 0.47,  min : 0.25, max : 2, step : 0.05 },
-        outter : { value : 1.23,  min : 1, max : 5, step : 0.25 },
-        transition_width : { value :  0.3,  min : 0, max : 1, step : 0.05 },
-        transition_power : { value : 4,  min : 0.25, max : 20, step : 0.01 }};
-*/
-
-
-/*
-const float R_INNER = 0.48;
-const float R = R_INNER + 0.75;
-const float ph_ray = 0.015;
-const float ph_mie = 0.005;
-const float INTENSITY = 10.;
-const float TRANSITION = 0.475;
-const float TRANSITION_POWER = 4.;
-*/
 
 const int NUM_OUT_SCATTER = 8;
 const int NUM_IN_SCATTER = 80;

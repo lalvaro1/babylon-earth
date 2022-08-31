@@ -35,13 +35,16 @@ vec2 getUV(in vec3 p, float rotation) {
 
     return uv;
 }
+/*
+const float ROTATION_SPEED = 0.015;
 
 void main(void) {
 
-    vec2 uv1 = getUV(vPosition, time * 0.02);
+    vec2 uv1 = getUV(vPosition, time * ROTATION_SPEED);
     vec2 uv2 = getUV(vPosition, (3.1415 + time) * 0.015);    
 
     uv2.y = 1.0 - uv2.y;
+
 //uv2=uv1;
     vec3 pointNormal = vPosition * 2.0;
     vec3 k = pointNormal;
@@ -91,5 +94,43 @@ void main(void) {
     gl_FragColor.a = 1.0;
 
     gl_FragColor = mix(gl_FragColor, ground, 0.5);
+* / 
+}
 */
+
+const float ROTATION_SPEED = 0.015;
+
+void main(void) {
+
+    vec2 uv1 = getUV(vPosition, time * ROTATION_SPEED);
+
+    float alpha =  texture(layer2, uv1).r;
+
+    
+
+    vec3 pointNormal = normalize(vPosition);
+    vec3 lightDir = normalize((vec4(1,-0.15,0.5,0) * view).xyz);
+
+    float sun  = max(-dot(lightDir, pointNormal), 0.0);
+
+    sun = smoothstep(0., 0.4, sun);
+
+    const float cloud_ambiant = 0.5;
+
+
+    alpha = alpha * sun;
+
+    gl_FragColor = vec4(vec3(1), alpha);
+
+/*
+    vec3 camPos = cameraPosition;
+    vec3 ray = normalize(camPos - vPosition);
+
+    float normalCheating = abs(dot(pointNormal, ray));
+
+    blending *= smoothstep(0.0, 1.0, normalCheating);
+
+    gl_FragColor.rbg = alpha1;//clouds;
+    gl_FragColor.a = smoothstep(0.,0.5, blending);*/
+
 }

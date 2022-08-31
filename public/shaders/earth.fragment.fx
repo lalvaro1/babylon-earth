@@ -39,27 +39,22 @@ vec2 getUV(in vec3 p, float rotation) {
     return uv;
 }
 
-
+const float ROTATION_SPEED = 0.015;
 
 
 void main(void) {
 
-    vec2 uv = getUV(vPosition, time * 0.015);
+    vec2 uv = getUV(vPosition, time * ROTATION_SPEED);
 
     // Normal map
     vec2 nmttext = texture(normal_map, uv).rg;
     vec3 material_normal = 2.0 * texture(normal_map, uv).rgb - 1.0;
-  /*  
-    material_normal.z *= 3.0;
-    material_normal = normalize(material_normal);
-*/
     material_normal.x = -(2.0 * nmttext.r - 1.0);
     material_normal.y = -(2.0 * nmttext.g - 1.0);    
     material_normal.z = 0.125;        
     material_normal = normalize(material_normal);
 
-//material_normal=vec3(0,0,1);
-
+    // Point normal
     vec3 pointNormal = vPosition * 2.0;
     vec3 k = pointNormal;
     vec3 up = vec3(0.0,1.0,0.0);
@@ -69,6 +64,7 @@ void main(void) {
     mat3 local = mat3(i, j, k); 
     vec3 localNormal = local * material_normal;
 
+    // Light
     mat4 camMat = transpose(view);
     vec3 lightDir = normalize((vec4(1,-0.15,0.5,0) * view).xyz);
 
@@ -81,18 +77,17 @@ void main(void) {
     vec3 nightGround = texture(night, uv).rgb * 1.2;    
 
     // clouds
-    vec2 uv2 = getUV(vPosition, time * 0.02);
+    //vec2 uv2 = getUV(vPosition, time * 0.02);
+    vec2 uv2 = getUV(vPosition, time * ROTATION_SPEED);
 
     vec3 clouds = texture(clouds, uv2).rgb;
-    float clouding = pow(1.0 - clouds.r, 0.5);
-
+    float clouding = 1.0-clouds.r;//pow(1.0 - clouds.r, 0.5);
 
     vec4 ground = vec4(mix(nightGround, dayGround, smoothstep(0.2, 0.33, sun)), 1.0) * clouding;
 
     vec4 mask = texture(mask, uv);
 
-    vec3 camPos = camMat[3].xyz;
-     camPos = cameraPosition;
+    vec3 camPos = cameraPosition;
 
     vec3 reflection = reflect(lightDir, localNormal);
     vec3 ray = normalize(camPos - vPosition);
