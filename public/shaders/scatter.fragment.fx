@@ -13,6 +13,7 @@ uniform float time;
 const float PI = 3.14159265359;
 const float MAX = 10000.0;
 
+/*
 const float R_INNER = 0.47;
 const float R = 1.23;
 const float ph_ray = 0.015;
@@ -20,6 +21,26 @@ const float ph_mie = 0.005;
 const float INTENSITY = 8.;
 const float TRANSITION = 0.3;
 const float TRANSITION_POWER = 4.;
+*/
+
+uniform float PARAM_intensity;
+uniform float PARAM_inner;
+uniform float PARAM_outter;
+uniform float PARAM_ray;
+uniform float PARAM_mie;
+uniform float PARAM_transition_width;
+uniform float PARAM_transition_power;
+
+/*
+  var scatteringOptions = { intensity : { value : 8, min : 5, max : 50, step : 1 },
+        ray: { value : 0.015,  min : 0, max : 1, step : 0.025 },
+        mie : { value : 0.005, min : 0, max : 1, step : 0.025 },
+        inner : { value : 0.47,  min : 0.25, max : 2, step : 0.05 },
+        outter : { value : 1.23,  min : 1, max : 5, step : 0.25 },
+        transition_width : { value :  0.3,  min : 0, max : 1, step : 0.05 },
+        transition_power : { value : 4,  min : 0.25, max : 20, step : 0.01 }};
+*/
+
 
 /*
 const float R_INNER = 0.48;
@@ -71,7 +92,7 @@ float phase_ray( float cc ) {
 }
 
 float density( vec3 p, float ph ) {
-	return exp( -max( length( p ) - R_INNER, 0.0 ) / ph );
+	return exp( -max( length( p ) - PARAM_inner, 0.0 ) / ph );
 }
 
 float optic( vec3 p, vec3 q, float ph ) {
@@ -105,25 +126,25 @@ vec3 in_scatter( vec3 o, vec3 dir, vec2 e, vec3 l ) {
 	vec3 v = o + dir * ( e.x + len * 0.5 );
     
     for ( int i = 0; i < NUM_IN_SCATTER; i++, v += s ) {   
-		float d_ray = density( v, ph_ray ) * len;
-        float d_mie = density( v, ph_mie ) * len;
+		float d_ray = density( v, PARAM_ray ) * len;
+        float d_mie = density( v, PARAM_mie ) * len;
         
         n_ray0 += d_ray;
         n_mie0 += d_mie;
         
 #if 0
-        vec2 e = ray_vs_sphere( v, l, R_INNER );
+        vec2 e = ray_vs_sphere( v, l, PARAM_inner);
         e.x = max( e.x, 0.0 );
         if ( e.x < e.y ) {
            continue;
         }
 #endif
         
-        vec2 f = ray_vs_sphere( v, l, R );
+        vec2 f = ray_vs_sphere( v, l, PARAM_outter);
 		vec3 u = v + l * f.y;
         
-        float n_ray1 = optic( v, u, ph_ray );
-        float n_mie1 = optic( v, u, ph_mie );
+        float n_ray1 = optic( v, u, PARAM_ray );
+        float n_mie1 = optic( v, u, PARAM_mie );
 		
         vec3 att = exp( - ( n_ray0 + n_ray1 ) * k_ray - ( n_mie0 + n_mie1 ) * k_mie * k_mie_ex );
         
@@ -138,7 +159,7 @@ vec3 in_scatter( vec3 o, vec3 dir, vec2 e, vec3 l ) {
      	sum_mie * k_mie * phase_mie( -0.78, c, cc );
     
 	
-	return INTENSITY * scatter;
+	return PARAM_intensity * scatter;
 }
 
 // angle : pitch, yaw
@@ -174,13 +195,13 @@ void main(void) {
 
 	vec3 l = -normalize((vec4(1,-0.15,0.5,0) * view).xyz);
 
-	vec2 e = ray_vs_sphere( eye, dir, R );
+	vec2 e = ray_vs_sphere( eye, dir, PARAM_outter);
 	if ( e.x > e.y ) {
 		gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0 );
         return;
 	}
 	
-	vec2 f = ray_vs_sphere( eye, dir, R_INNER );
+	vec2 f = ray_vs_sphere( eye, dir, PARAM_inner);
 	e.y = min( e.y, f.x );
 
 	vec3 I = in_scatter( eye, dir, e, l );
@@ -193,7 +214,7 @@ void main(void) {
 	vec3 projectedPoint = cameraPosition + cameraToPoint * dot(cameraToCenter, cameraToPoint);
 
 	float distToCenter = length(projectedPoint);
-	float alpha = pow(smoothstep(TRANSITION, 0.5, distToCenter), TRANSITION_POWER);
+	float alpha = pow(smoothstep(PARAM_transition_width, 0.5, distToCenter), PARAM_transition_power);
  
 	gl_FragColor.a = alpha;	
 }
