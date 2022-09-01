@@ -14,7 +14,13 @@ uniform mat4 view;
 uniform float canvas_width;
 uniform float canvas_height;
 uniform float time;
+uniform vec3 sun;
 
+uniform float PARAM_diffuse;
+uniform float PARAM_specular;
+uniform float PARAM_specular_power;
+uniform float PARAM_diffuse_threshold;
+uniform float PARAM_ambient;
 
 vec2 hash22(vec2 p) {
     const vec3 HASHSCALE3 = vec3(.1031, .1030, .0973);
@@ -102,25 +108,25 @@ const float ROTATION_SPEED = 0.015;
 
 void main(void) {
 
-    vec2 uv1 = getUV(vPosition, time * ROTATION_SPEED);
-
-    float alpha =  texture(layer2, uv1).r;
-
-    
-
+    vec2 uv = getUV(vPosition, time * ROTATION_SPEED);
+    float alpha =  texture(layer2, uv).r;
+  
     vec3 pointNormal = normalize(vPosition);
-    vec3 lightDir = normalize((vec4(1,-0.15,0.5,0) * view).xyz);
+    vec3 lightDir = normalize((vec4(vec3(sun), 0.) * view).xyz);
 
-    float sun  = max(-dot(lightDir, pointNormal), 0.0);
+    float diffuse  = max(dot(-lightDir, pointNormal), 0.0);
+    diffuse = smoothstep(0., PARAM_diffuse_threshold, diffuse);
 
-    sun = smoothstep(0., 0.4, sun);
+    vec3 cameraDir = -normalize(cameraPosition);
+    float specular = pow(max(0., dot(reflect(lightDir, pointNormal), -cameraDir)), PARAM_specular_power);
 
-    const float cloud_ambiant = 0.5;
+    float lighting = PARAM_ambient + diffuse * PARAM_diffuse + specular * PARAM_specular;
 
+    gl_FragColor = vec4(vec3(lighting), alpha);
 
-    alpha = alpha * sun;
+//    gl_FragColor = vec4(vec3(sun), 1.);    
 
-    gl_FragColor = vec4(vec3(1), alpha);
+//    gl_FragColor = vec4(vec3(1), alpha);
 
 /*
     vec3 camPos = cameraPosition;

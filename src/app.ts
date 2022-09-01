@@ -7,7 +7,7 @@ import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, Sha
 
 function createMaterial(name: string, scene: Scene, customUniforms : string[] = []) {
 
-    const uniforms = ["world", "worldView", "worldViewProjection", "view", "projection", "cameraPosition", "time", "ratio", ...customUniforms];
+    const uniforms = ["world", "worldView", "worldViewProjection", "view", "projection", "cameraPosition", "time", "ratio", "sun", ...customUniforms];
 
     return new ShaderMaterial("shader", scene, "./shaders/" + name,
     {
@@ -51,6 +51,7 @@ class App {
         earth.renderingGroupId = 0;
         clouds.renderingGroupId = 1;        
         scatter.renderingGroupId = 2;                
+        scatter.setEnabled(true);
 
         camera.position = new Vector3(0,0.5,-1.);
         camera.wheelPrecision = 200;
@@ -83,6 +84,19 @@ class App {
         earthProceduralMaterial.setTexture("clouds", cloudShadowTexture);     
         earth.material = earthProceduralMaterial;
 
+        // ground settings
+        var groundOptions = { 
+            specular : { value : 0.24, min : 0, max : 1, step : 0.01 },
+            diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
+            specular_power : { value : 12.5, min : 1., max : 15, step : 0.005 },                        
+            diffuse_power : { value : 0.49, min : 0.25, max : 2, step : 0.01 },                                    
+            day_ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },            
+            night_boost : { value : 0.64, min : 0.5, max : 2, step : 0.01 },                                    
+            night_day_threshold : { value : 0.05, min : 0, max : 0.15, step : 0.005 },            
+            night_day_transition : { value : 0.1, min : 0, max : 0.2, step : 0.005 },                        
+        };
+        const groundUniforms = new InteractiveFloatUniforms(groundOptions);
+
         // scattering
         var scatteringOptions = { 
             intensity : { value : 27, min : 0, max : 50, step : 0.5 },
@@ -93,18 +107,24 @@ class App {
             transition_width : { value :  0.36,  min : 0, max : 0.5, step : 0.0025 },
             transition_power : { value : 2.88,  min : 0.25, max : 20, step : 0.0025 }
         };
-
         const scatterUniforms = new InteractiveFloatUniforms(scatteringOptions);
 
-        /*
-        var settings = new dat.GUI();
-        var folder1 = settings.addFolder('Scattering');
-        scatterUniforms.addToSettingsFolder(folder1);
-        */
+        // clouds
+        var cloudOptions = { 
+            specular : { value : 1., min : 0, max : 1, step : 0.01 },
+            diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
+            specular_power : { value : 12.5, min : 1., max : 50, step : 0.1 },     
+            diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.05 },                       
+            ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },            
+        };
+        const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
+     
 
         var scatterProceduralMaterial = createMaterial("scatter", scene, scatterUniforms.getUniformList());   
         scatter.material = scatterProceduralMaterial;
         scatter.material.alpha = 0.0;
+
+        var sun = new Vector3(3., -0.25, 1.);
 
         window.addEventListener("keydown", (ev) => {
             // Shift+Ctrl+Alt+I
@@ -128,13 +148,26 @@ class App {
             earthProceduralMaterial.setFloat("time", time);
             cloudProceduralMaterial.setFloat("time", time);
             scatterProceduralMaterial.setFloat("time", time);
+
+            scatterProceduralMaterial.setVector3("sun", sun);
+            earthProceduralMaterial.setVector3("sun", sun);
+            cloudProceduralMaterial.setVector3("sun", sun);
+            scatterProceduralMaterial.setVector3("sun", sun);
+
             time += engine.getDeltaTime() * 0.0005;
 
             scatterUniforms.updateShader(scatterProceduralMaterial);
+            cloudUniforms.updateShader(cloudProceduralMaterial);
+            groundUniforms.updateShader(earthProceduralMaterial);            
 
             engine.resize();
             scene.render();
         });
+
+        var settingsUI = new dat.GUI();
+        scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
+        cloudUniforms.addToSettingsFolder(settingsUI.addFolder('Clouds'));
+        groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
     }
 }
 new App();

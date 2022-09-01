@@ -8,6 +8,7 @@ uniform mat4 view;
 uniform float canvas_width;
 uniform float canvas_height;
 uniform float time;
+uniform vec3 sun;
 
 // math const
 const float PI = 3.14159265359;
@@ -172,7 +173,7 @@ void main(void) {
     vec3 eye = cameraPosition;
     vec3 dir = normalize(wPosition - cameraPosition);
 
-	vec3 l = -normalize((vec4(1,-0.15,0.5,0) * view).xyz);
+	vec3 l = -normalize((vec4(vec3(sun),0.) * view).xyz);
 
 	vec2 e = ray_vs_sphere( eye, dir, PARAM_outter);
 	if ( e.x > e.y ) {
