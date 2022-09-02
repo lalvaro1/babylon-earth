@@ -38,14 +38,28 @@ vec2 hash22(vec2 p) {
     return fract((p3.xx+p3.yz)*p3.zy);
 }
 
+/*
+float atan2(in float y, in float x) {
+
+    if(y == 0.) {
+        if(x>0.) return 0.;
+        return 3.14159265359;
+    }
+
+    return atan(y, x);
+}
+*/
+
 vec2 getUV(in vec3 p, float rotation) {
+
     vec2 uv;
-    uv.x = (atan(p.z, p.x) / 3.1415 + 1.0) * 0.5 + rotation;
+
+    uv.x = (atan(p.z, p.x) / 3.14159265359 + 1.0) * 0.5 + rotation;
 
     float r = length(p.xz);
     float alpha = atan(p.y, r);
 
-    uv.y = (1.0 + alpha / 1.5708) * 0.5;
+    uv.y = (1.0 + alpha / 1.57079632679) * 0.5;
 
     return uv;
 }
@@ -104,9 +118,6 @@ void main(void) {
     vec3 dayGround = (dayGroundTexture * (PARAM_day_ambient + diff) + (specularColor * specular * mask)) * clouding;
     vec3 nightGround = nightGroundTexture * PARAM_night_boost;
 
-    vec4 ground = vec4(mix(nightGround, dayGround, day_night_mix), 1.0);
-
-    gl_FragColor = ground;
-    gl_FragColor.a = 1.0;
+    gl_FragColor = vec4(mix(nightGround, dayGround, day_night_mix), 1.0);
 }
 

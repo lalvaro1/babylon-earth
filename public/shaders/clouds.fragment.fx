@@ -36,12 +36,12 @@ vec2 hash22(vec2 p) {
 
 vec2 getUV(in vec3 p, float rotation) {
     vec2 uv;
-    uv.x = (atan(p.z, p.x) / 3.1415 + 1.0) * 0.5 + rotation;
+    uv.x = (atan(p.z, p.x) / 3.14159265359 + 1.0) * 0.5 + rotation;
 
     float r = length(p.xz);
     float alpha = atan(p.y, r);
 
-    uv.y = (1.0 + alpha / 1.5708) * 0.5;
+    uv.y = (1.0 + alpha / 1.57079632679) * 0.5;
 
     return uv;
 }

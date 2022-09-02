@@ -50,8 +50,6 @@ class App {
         var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.020 }, scene);   
         clouds.checkCollisions = true;
 
-        clouds.setEnabled(true);
-
         const planeOptions = { width : 1.33, height: 1.33 };
 
         var scatter: Mesh = MeshBuilder.CreatePlane("plane", planeOptions, scene); 
@@ -60,8 +58,7 @@ class App {
         earth.renderingGroupId = 0;
         clouds.renderingGroupId = 1;        
         scatter.renderingGroupId = 2;                
-        scatter.setEnabled(true);
-
+        
         camera.position = new Vector3(0,0.5,-1.);
         camera.wheelPrecision = 200;
         camera.minZ = 0.1;
@@ -74,7 +71,10 @@ class App {
         var earthProceduralMaterial = createMaterial("earth", scene);  
         earth.material = earthProceduralMaterial;
 
-        earthProceduralMaterial.setTexture("diffuse", new Texture("./textures/earth.jpg", scene));
+        const earthTexture = new Texture("./textures/earth.jpg", scene, true, true, Texture.BILINEAR_SAMPLINGMODE);
+        //earthTexture.coordinatesMode = Texture.SPHERICAL_MODE;
+
+        earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
         earthProceduralMaterial.setTexture("night", new Texture("./textures/night.jpg", scene));        
         earthProceduralMaterial.setTexture("mask", new Texture("./textures/mask.png", scene));                
@@ -84,7 +84,7 @@ class App {
         clouds.material = cloudProceduralMaterial;
 
         const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
-        const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);        
+        const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene, true, true, Texture.BILINEAR_SAMPLINGMODE);    
         //const scatteringTexture = new Texture("./textures/scattering.png", scene);                
 
         cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
@@ -134,12 +134,13 @@ class App {
             normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },               
         };
         const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
-     
+
+        clouds.setEnabled(true);
+        scatter.setEnabled(true);
 
         var scatterProceduralMaterial = createMaterial("scatter", scene, scatterUniforms.getUniformList());   
         scatter.material = scatterProceduralMaterial;
         scatter.material.alpha = 0.0;
-        //scatter.setEnabled(false);
 
         var sun = new Vector3(3., -0.25, 1.);
 
