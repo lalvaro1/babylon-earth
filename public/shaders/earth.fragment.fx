@@ -27,6 +27,7 @@ uniform float PARAM_day_ambient;
 uniform float PARAM_night_boost;
 uniform float PARAM_night_day_threshold;
 uniform float PARAM_night_day_transition;
+uniform float PARAM_cloud_shadow;
 
 
 vec2 hash22(vec2 p) {
@@ -90,7 +91,7 @@ void main(void) {
     // clouds
     vec2 uv2 = getUV(vPosition, time * ROTATION_SPEED);
     vec3 clouds = texture(clouds, uv2).rgb;
-    float clouding = 1.0-clouds.r;
+    float clouding = 1.0-(clouds.r*PARAM_cloud_shadow);
 
     // specular
     float mask = texture(mask, uv).r;

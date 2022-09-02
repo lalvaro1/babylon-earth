@@ -3,7 +3,7 @@ import { InteractiveFloatUniforms } from "./InteractiveFloatUniforms";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture } from "@babylonjs/core";
+import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture, Vector4 } from "@babylonjs/core";
 
 function createMaterial(name: string, scene: Scene, customUniforms : string[] = []) {
 
@@ -20,6 +20,15 @@ const heroes = ['Batman', 'Superman'];
 const villains : string[] = [];
 const all = ["he", "ggt", ...villains];
 
+
+function colorToVec4(color: String) : Vector4 {
+    const r = parseInt(color.slice(1,3), 16);
+    const g = parseInt(color.slice(3,5), 16);
+    const b = parseInt(color.slice(6,7), 16);
+    const a = parseInt(color.slice(7,8), 16);    
+
+    return new Vector4(r,g,b,a);
+}
 
 
 class App {
@@ -38,12 +47,12 @@ class App {
         scene.clearColor = new Color4(0, 0, 0, 1);
 
         var earth: Mesh = MeshBuilder.CreateSphere("earth", { diameter: 1 }, scene);
-        var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.010 }, scene);   
+        var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.020 }, scene);   
         clouds.checkCollisions = true;
 
         clouds.setEnabled(true);
 
-        const planeOptions = { width : 4, height: 4};
+        const planeOptions = { width : 1.33, height: 1.33 };
 
         var scatter: Mesh = MeshBuilder.CreatePlane("plane", planeOptions, scene); 
         scatter.billboardMode = Mesh.BILLBOARDMODE_ALL;
@@ -76,9 +85,11 @@ class App {
 
         const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
         const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);        
+        //const scatteringTexture = new Texture("./textures/scattering.png", scene);                
 
         cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
         cloudProceduralMaterial.setTexture("layer2", cloudAlphaTexture);        
+        //cloudProceduralMaterial.setTexture("scattering", scatteringTexture);                
         clouds.material.alpha = 0.0;
 
         earthProceduralMaterial.setTexture("clouds", cloudShadowTexture);     
@@ -93,7 +104,8 @@ class App {
             day_ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },            
             night_boost : { value : 0.64, min : 0.5, max : 2, step : 0.01 },                                    
             night_day_threshold : { value : 0.05, min : 0, max : 0.15, step : 0.005 },            
-            night_day_transition : { value : 0.1, min : 0, max : 0.2, step : 0.005 },                        
+            night_day_transition : { value : 0.1, min : 0, max : 0.2, step : 0.005 },      
+            cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },                        
         };
         const groundUniforms = new InteractiveFloatUniforms(groundOptions);
 
@@ -104,8 +116,9 @@ class App {
             mie : { value : 0.002, min : 0.001, max : 0.05, step : 0.00025 },
             inner : { value : 0.493,  min : 0.4, max : 0.6, step : 0.001 },
             outter : { value : 1.23,  min : 1, max : 5, step : 0.01 },
-            transition_width : { value :  0.36,  min : 0, max : 0.5, step : 0.0025 },
-            transition_power : { value : 2.88,  min : 0.25, max : 20, step : 0.0025 }
+            transition_width : { value :  0.415,  min : 0, max : 0.5, step : 0.0025 },
+            transition_power : { value : 2.88,  min : 0.25, max : 20, step : 0.0025 },
+            outter_clipping :  { value : 0.5075,  min : 0.5, max : 0.8, step : 0.0025 },
         };
         const scatterUniforms = new InteractiveFloatUniforms(scatteringOptions);
 
@@ -115,7 +128,10 @@ class App {
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
             specular_power : { value : 12.5, min : 1., max : 50, step : 0.1 },     
             diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.05 },                       
-            ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },            
+            ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },         
+            meoband : { value : 0.5, min : 0, max : 1, step : 0.01 },   
+            normal_cheating_threshold : { value : 0.1, min : 0., max : 1, step : 0.01 },   
+            normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },               
         };
         const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
      
@@ -123,6 +139,7 @@ class App {
         var scatterProceduralMaterial = createMaterial("scatter", scene, scatterUniforms.getUniformList());   
         scatter.material = scatterProceduralMaterial;
         scatter.material.alpha = 0.0;
+        //scatter.setEnabled(false);
 
         var sun = new Vector3(3., -0.25, 1.);
 
@@ -166,8 +183,8 @@ class App {
 
         var settingsUI = new dat.GUI();
         scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
-        cloudUniforms.addToSettingsFolder(settingsUI.addFolder('Clouds'));
         groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
+        cloudUniforms.addToSettingsFolder(settingsUI.addFolder('Clouds'));
     }
 }
 new App();

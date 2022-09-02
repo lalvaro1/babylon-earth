@@ -7,6 +7,7 @@ varying vec3 vPosition;
 
 uniform sampler2D layer1;
 uniform sampler2D layer2;
+//uniform sampler2D scattering;
 
 uniform vec3 cameraPosition;
 
@@ -21,6 +22,9 @@ uniform float PARAM_specular;
 uniform float PARAM_specular_power;
 uniform float PARAM_diffuse_threshold;
 uniform float PARAM_ambient;
+uniform float PARAM_meoband;
+uniform float PARAM_normal_cheating_transition;
+uniform float PARAM_normal_cheating_threshold;
 
 vec2 hash22(vec2 p) {
     const vec3 HASHSCALE3 = vec3(.1031, .1030, .0973);
@@ -41,75 +45,13 @@ vec2 getUV(in vec3 p, float rotation) {
 
     return uv;
 }
-/*
-const float ROTATION_SPEED = 0.015;
-
-void main(void) {
-
-    vec2 uv1 = getUV(vPosition, time * ROTATION_SPEED);
-    vec2 uv2 = getUV(vPosition, (3.1415 + time) * 0.015);    
-
-    uv2.y = 1.0 - uv2.y;
-
-//uv2=uv1;
-    vec3 pointNormal = vPosition * 2.0;
-    vec3 k = pointNormal;
-    vec3 up = vec3(0.0,1.0,0.0);
-    vec3 i = normalize(cross(up, k));
-    vec3 j = cross(k, i);
-
-    mat3 local = mat3(i, j, k); 
-
-    mat4 camMat = transpose(view);
-    vec3 lightDir = normalize((vec4(1,-0.15,0.5,0) * view).xyz);
-
-    float sun  = max(-dot(lightDir, pointNormal), 0.0);
-
-    const float ambiant = 0.025;
-
-    //vec3 clouds = texture(layer1, uv).rgb;
-    vec3 alpha1 = texture(layer2, uv1).rgb;    
-    vec3 alpha2 = texture(layer2, uv2).rgb;        
-
-    float blending = max(alpha1, alpha2).r * sun;
-
-    vec3 camPos = cameraPosition;
-    vec3 ray = normalize(camPos - vPosition);
-
-    float normalCheating = abs(dot(pointNormal, ray));
-
-    blending *= smoothstep(0.0, 1.0, normalCheating);
-
-    gl_FragColor.rbg = max(alpha1, alpha2);//clouds;
-    gl_FragColor.a = smoothstep(0.,0.5, blending);
-
-    //gl_FragColor = mix(gl_FragColor, vec4(173./255., 255./255., 248./255.,1.-normalCheating), 1. - normalCheating);
-   
-    float scatteringIntensity = pow(normalCheating/0.32, 4.);
-
-    if(scatteringIntensity>0.99) scatteringIntensity = 0.;
-
-    //gl_FragColor = mix(gl_FragColor, vec4(143./255., 150./255., 248./255.,scatteringIntensity), normalCheating);
-
-    //gl_FragColor.a = 1.0;
-
-    //gl_FragColor.rgb = vec3(smoothstep(0.0, 1.0, normalCheating));
-
-/*
-    gl_FragColor.rgb = localNormal;
-    gl_FragColor.a = 1.0;
-
-    gl_FragColor = mix(gl_FragColor, ground, 0.5);
-* / 
-}
-*/
 
 const float ROTATION_SPEED = 0.015;
 
 void main(void) {
 
     vec2 uv = getUV(vPosition, time * ROTATION_SPEED);
-    float alpha =  texture(layer2, uv).r;
+    float alpha = texture(layer2, uv).r;
   
     vec3 pointNormal = normalize(vPosition);
     vec3 lightDir = normalize((vec4(vec3(sun), 0.) * view).xyz);
@@ -122,21 +64,21 @@ void main(void) {
 
     float lighting = PARAM_ambient + diffuse * PARAM_diffuse + specular * PARAM_specular;
 
-    gl_FragColor = vec4(vec3(lighting), alpha);
+    vec4 render = vec4(vec3(lighting), alpha);
+        /*
+    // meo band
+    vec4 meoband_color = vec4(1,0,0,0.5);
 
-//    gl_FragColor = vec4(vec3(sun), 1.);    
+    float latitude = asin(pointNormal.y);
+    float transition = smoothstep(0.87, 0.875, abs(latitude));
 
-//    gl_FragColor = vec4(vec3(1), alpha);
+    float bandalpha = mix(alpha, PARAM_meoband, transition);
+    gl_FragColor = mix(render, vec4(vec3(alpha), PARAM_meoband), transition);
+    */
 
-/*
-    vec3 camPos = cameraPosition;
-    vec3 ray = normalize(camPos - vPosition);
+    vec3 ray = normalize(cameraPosition - vPosition);
+    float normalCheating = smoothstep(PARAM_normal_cheating_threshold, PARAM_normal_cheating_threshold+PARAM_normal_cheating_transition, abs(dot(pointNormal, ray)));
 
-    float normalCheating = abs(dot(pointNormal, ray));
-
-    blending *= smoothstep(0.0, 1.0, normalCheating);
-
-    gl_FragColor.rbg = alpha1;//clouds;
-    gl_FragColor.a = smoothstep(0.,0.5, blending);*/
-
+    gl_FragColor.rgb = vec3(lighting);
+    gl_FragColor.a = alpha * normalCheating;    
 }

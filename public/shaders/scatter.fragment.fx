@@ -31,6 +31,7 @@ uniform float PARAM_ray;
 uniform float PARAM_mie;
 uniform float PARAM_transition_width;
 uniform float PARAM_transition_power;
+uniform float PARAM_outter_clipping;
 
 const int NUM_OUT_SCATTER = 8;
 const int NUM_IN_SCATTER = 80;
@@ -169,6 +170,21 @@ vec3 ray_dir( float fov, vec2 size, vec2 pos ) {
 
 void main(void) {
 
+
+	vec3 cameraToCenter = -cameraPosition;
+	vec3 cameraToPoint  = normalize(wPosition-cameraPosition);
+
+	vec3 projectedPoint = cameraPosition + cameraToPoint * dot(cameraToCenter, cameraToPoint);
+
+	float distToCenter = length(projectedPoint);
+	float alpha = pow(smoothstep(PARAM_transition_width, 0.5, distToCenter), PARAM_transition_power);
+
+	// do not compute when not necessary
+	if(alpha<0.01) return;
+	if(distToCenter>PARAM_outter_clipping) return;
+
+	gl_FragColor.a = alpha;	
+
 	// sun light dir
     vec3 eye = cameraPosition;
     vec3 dir = normalize(wPosition - cameraPosition);
@@ -187,14 +203,4 @@ void main(void) {
 	vec3 I = in_scatter( eye, dir, e, l );
 	
 	gl_FragColor.rgb = vec3( pow( I, vec3(0.4545)));
-
- 	vec3 cameraToCenter = -cameraPosition;
-	vec3 cameraToPoint  = normalize(wPosition-cameraPosition);
-
-	vec3 projectedPoint = cameraPosition + cameraToPoint * dot(cameraToCenter, cameraToPoint);
-
-	float distToCenter = length(projectedPoint);
-	float alpha = pow(smoothstep(PARAM_transition_width, 0.5, distToCenter), PARAM_transition_power);
- 
-	gl_FragColor.a = alpha;	
 }
