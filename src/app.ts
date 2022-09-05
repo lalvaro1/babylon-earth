@@ -143,7 +143,7 @@ class App {
 
         // general settings
         var generalOptions = { 
-            rotationSpeed : 0.02,
+            rotationSpeed : 0.015,
         };
 
         clouds.setEnabled(true);
@@ -195,13 +195,15 @@ class App {
             scene.render();
         });
 
+        /*
         var settingsUI = new dat.GUI();
         const generalFolder = settingsUI.addFolder('General Settings');
-        generalFolder.add(generalOptions, 'rotationSpeed', 0, 0.25, 0.01);        
+        generalFolder.add(generalOptions, 'rotationSpeed', 0, 0.1, 0.001);        
 
         scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
         groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
         cloudUniforms.addToSettingsFolder(settingsUI.addFolder('Clouds'));
+        */
     }
 }
 new App();
