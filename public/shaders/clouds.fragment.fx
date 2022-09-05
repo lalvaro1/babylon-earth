@@ -34,23 +34,9 @@ vec2 hash22(vec2 p) {
     return fract((p3.xx+p3.yz)*p3.zy);
 }
 
-vec2 getUV(in vec3 p, float rotation) {
-    vec2 uv;
-    uv.x = (atan(p.z, p.x) / 3.14159265359 + 1.0) * 0.5 + rotation;
-
-    float r = length(p.xz);
-    float alpha = atan(p.y, r);
-
-    uv.y = (1.0 + alpha / 1.57079632679) * 0.5;
-
-    return uv;
-}
-
-const float ROTATION_SPEED = 0.015;
-
 void main(void) {
 
-    vec2 uv = getUV(vPosition, time * ROTATION_SPEED);
+    vec2 uv = -vUV;
     float alpha = texture(layer2, uv).r;
   
     vec3 pointNormal = normalize(vPosition);

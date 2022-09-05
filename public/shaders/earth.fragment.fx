@@ -50,26 +50,12 @@ float atan2(in float y, in float x) {
 }
 */
 
-vec2 getUV(in vec3 p, float rotation) {
-
-    vec2 uv;
-
-    uv.x = (atan(p.z, p.x) / 3.14159265359 + 1.0) * 0.5 + rotation;
-
-    float r = length(p.xz);
-    float alpha = atan(p.y, r);
-
-    uv.y = (1.0 + alpha / 1.57079632679) * 0.5;
-
-    return uv;
-}
-
-const float ROTATION_SPEED = 0.015;
-
+const float ROTATION_SPEED = 0.0;
 
 void main(void) {
 
-    vec2 uv = getUV(vPosition, time * ROTATION_SPEED);
+    float textureAnimation = time * ROTATION_SPEED;
+    vec2 uv = -vec2(vUV.x - textureAnimation, vUV.y);
 
     // Normal map
     vec2 nmttext = texture(normal_map, uv).rg;
@@ -103,8 +89,7 @@ void main(void) {
     float day_night_mix = smoothstep(max(0., PARAM_night_day_threshold - PARAM_night_day_transition), PARAM_night_day_threshold + PARAM_night_day_transition, sun);
 
     // clouds
-    vec2 uv2 = getUV(vPosition, time * ROTATION_SPEED);
-    vec3 clouds = texture(clouds, uv2).rgb;
+    vec3 clouds = texture(clouds, uv).rgb;
     float clouding = 1.0-(clouds.r*PARAM_cloud_shadow);
 
     // specular
@@ -119,5 +104,18 @@ void main(void) {
     vec3 nightGround = nightGroundTexture * PARAM_night_boost;
 
     gl_FragColor = vec4(mix(nightGround, dayGround, day_night_mix), 1.0);
+
+    /*
+    gl_FragColor.rgb = dayGroundTexture;
+
+    if(abs(vPosition.z)>0.01 && abs(vPosition.z)<0.02 && vPosition.x<0.) gl_FragColor.rgb = vec3(1,1,0);
+
+    gl_FragColor.a = 1.0;
+
+    if(abs(vPosition.z)==0.0 && vPosition.x < 0.) {
+    gl_FragColor.rgb = vec3(1,0,0);
+    }
+    */
+
 }
 

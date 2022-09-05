@@ -59,6 +59,8 @@ class App {
         clouds.renderingGroupId = 1;        
         scatter.renderingGroupId = 2;                
         
+        clouds.parent = earth;
+
         camera.position = new Vector3(0,0.5,-1.);
         camera.wheelPrecision = 200;
         camera.minZ = 0.1;
@@ -71,8 +73,7 @@ class App {
         var earthProceduralMaterial = createMaterial("earth", scene);  
         earth.material = earthProceduralMaterial;
 
-        const earthTexture = new Texture("./textures/earth.jpg", scene, true, true, Texture.BILINEAR_SAMPLINGMODE);
-        //earthTexture.coordinatesMode = Texture.SPHERICAL_MODE;
+        const earthTexture = new Texture("./textures/earth.jpg", scene);    
 
         earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
@@ -84,8 +85,13 @@ class App {
         clouds.material = cloudProceduralMaterial;
 
         const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
-        const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene, true, true, Texture.BILINEAR_SAMPLINGMODE);    
+        const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);//, false, true, Texture.BILINEAR_SAMPLINGMODE);    
         //const scatteringTexture = new Texture("./textures/scattering.png", scene);                
+
+        cloudAlphaTexture.wrapU = Texture.WRAP_ADDRESSMODE;
+        cloudAlphaTexture.wrapV = Texture.WRAP_ADDRESSMODE;        
+        cloudAlphaTexture.wrapR = Texture.WRAP_ADDRESSMODE;    
+
 
         cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
         cloudProceduralMaterial.setTexture("layer2", cloudAlphaTexture);        
@@ -127,13 +133,18 @@ class App {
             specular : { value : 1., min : 0, max : 1, step : 0.01 },
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
             specular_power : { value : 12.5, min : 1., max : 50, step : 0.1 },     
-            diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.05 },                       
+            diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.005 },                       
             ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },         
             meoband : { value : 0.5, min : 0, max : 1, step : 0.01 },   
             normal_cheating_threshold : { value : 0.1, min : 0., max : 1, step : 0.01 },   
             normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },               
         };
         const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
+
+        // general settings
+        var generalOptions = { 
+            rotationSpeed : 0.02,
+        };
 
         clouds.setEnabled(true);
         scatter.setEnabled(true);
@@ -172,7 +183,9 @@ class App {
             cloudProceduralMaterial.setVector3("sun", sun);
             scatterProceduralMaterial.setVector3("sun", sun);
 
-            time += engine.getDeltaTime() * 0.0005;
+            const dt = engine.getDeltaTime() * 0.001;    
+            earth.rotation.y += dt * generalOptions.rotationSpeed;
+            time += dt;
 
             scatterUniforms.updateShader(scatterProceduralMaterial);
             cloudUniforms.updateShader(cloudProceduralMaterial);
@@ -183,6 +196,9 @@ class App {
         });
 
         var settingsUI = new dat.GUI();
+        const generalFolder = settingsUI.addFolder('General Settings');
+        generalFolder.add(generalOptions, 'rotationSpeed', 0, 0.25, 0.01);        
+
         scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
         groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
         cloudUniforms.addToSettingsFolder(settingsUI.addFolder('Clouds'));
