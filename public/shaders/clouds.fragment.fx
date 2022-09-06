@@ -40,7 +40,7 @@ void main(void) {
     float alpha = texture(layer2, uv).r;
   
     vec3 pointNormal = normalize(vPosition);
-    vec3 lightDir = normalize((vec4(vec3(sun), 0.) * view).xyz);
+    vec3 lightDir = normalize(sun);
 
     float diffuse  = max(dot(-lightDir, pointNormal), 0.0);
     diffuse = smoothstep(0., PARAM_diffuse_threshold, diffuse);

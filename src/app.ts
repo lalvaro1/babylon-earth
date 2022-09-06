@@ -3,7 +3,7 @@ import { InteractiveFloatUniforms } from "./InteractiveFloatUniforms";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture, Vector4 } from "@babylonjs/core";
+import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture, Vector4, ColorSplitterBlock } from "@babylonjs/core";
 
 function createMaterial(name: string, scene: Scene, customUniforms : string[] = []) {
 
@@ -77,7 +77,7 @@ class App {
 
         earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
-        earthProceduralMaterial.setTexture("night", new Texture("./textures/night.jpg", scene));        
+        earthProceduralMaterial.setTexture("night", new Texture("./textures/night2.jpg", scene));        
         earthProceduralMaterial.setTexture("mask", new Texture("./textures/mask.png", scene));                
 
         // clouds
@@ -103,15 +103,16 @@ class App {
 
         // ground settings
         var groundOptions = { 
-            specular : { value : 0.24, min : 0, max : 1, step : 0.01 },
+            specular : { value : 0.20, min : 0, max : 1, step : 0.01 },
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
-            specular_power : { value : 12.5, min : 1., max : 15, step : 0.005 },                        
-            diffuse_power : { value : 0.49, min : 0.25, max : 2, step : 0.01 },                                    
-            day_ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },            
-            night_boost : { value : 0.64, min : 0.5, max : 2, step : 0.01 },                                    
-            night_day_threshold : { value : 0.05, min : 0, max : 0.15, step : 0.005 },            
-            night_day_transition : { value : 0.1, min : 0, max : 0.2, step : 0.005 },      
-            cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },                        
+            specular_power : { value : 3.5, min : 1., max : 15, step : 0.005 },                        
+            diffuse_power : { value : 1., min : 0.25, max : 2, step : 0.01 },                                    
+            day_ambient : { value : 0.2, min : 0, max : 1, step : 0.01 },            
+            night_boost : { value : 0.8, min : 0., max : 2, step : 0.01 },                                    
+            night_day_threshold : { value : 0.0, min : 0, max : 0.15, step : 0.005 },            
+            night_day_transition : { value : 0.2, min : 0, max : 0.2, step : 0.005 },      
+            cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
+            bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },                        
         };
         const groundUniforms = new InteractiveFloatUniforms(groundOptions);
 
@@ -124,7 +125,7 @@ class App {
             outter : { value : 1.23,  min : 1, max : 5, step : 0.01 },
             transition_width : { value :  0.415,  min : 0, max : 0.5, step : 0.0025 },
             transition_power : { value : 2.88,  min : 0.25, max : 20, step : 0.0025 },
-            outter_clipping :  { value : 0.5075,  min : 0.5, max : 0.8, step : 0.0025 },
+            outter_clipping :  { value : 0.52,  min : 0.5, max : 0.8, step : 0.0025 },
         };
         const scatterUniforms = new InteractiveFloatUniforms(scatteringOptions);
 
@@ -134,7 +135,7 @@ class App {
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
             specular_power : { value : 12.5, min : 1., max : 50, step : 0.1 },     
             diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.005 },                       
-            ambient : { value : 0.27, min : 0, max : 1, step : 0.01 },         
+            ambient : { value : 0.18, min : 0, max : 1, step : 0.01 },         
             meoband : { value : 0.5, min : 0, max : 1, step : 0.01 },   
             normal_cheating_threshold : { value : 0.1, min : 0., max : 1, step : 0.01 },   
             normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },               
@@ -144,6 +145,7 @@ class App {
         // general settings
         var generalOptions = { 
             rotationSpeed : 0.02,
+            sunPosition : -1.13,
         };
 
         clouds.setEnabled(true);
@@ -187,6 +189,9 @@ class App {
             earth.rotation.y += dt * generalOptions.rotationSpeed;
             time += dt;
 
+            const sunAngle = -camera.alpha+generalOptions.sunPosition;    
+            sun = new Vector3(Math.cos(sunAngle), -0.15, Math.sin(sunAngle));
+
             scatterUniforms.updateShader(scatterProceduralMaterial);
             cloudUniforms.updateShader(cloudProceduralMaterial);
             groundUniforms.updateShader(earthProceduralMaterial);            
@@ -198,6 +203,7 @@ class App {
         var settingsUI = new dat.GUI();
         const generalFolder = settingsUI.addFolder('General Settings');
         generalFolder.add(generalOptions, 'rotationSpeed', 0, 0.25, 0.01);        
+        generalFolder.add(generalOptions, 'sunPosition', -3.1415, 3.1415, 0.01);                
 
         scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
         groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
