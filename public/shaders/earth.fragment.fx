@@ -30,6 +30,8 @@ uniform float PARAM_night_day_transition;
 uniform float PARAM_cloud_shadow;
 uniform float PARAM_bump;
 
+uniform vec3 PARAM_night_color;
+uniform vec3 PARAM_specular_color;
 
 vec2 hash22(vec2 p) {
     const vec3 HASHSCALE3 = vec3(.1031, .1030, .0973);
@@ -100,37 +102,9 @@ void main(void) {
 
     float specular = pow(clamp(dot(reflection, ray), 0.0, 1.0), PARAM_specular_power) * PARAM_specular;
     
-    /*
-    if(dot(pointNormal, lightDir) < 0.) {
-        specular
-    }
-    else {
-        diff = 0.;
-        specular = 0.;
-    }
-    */
-
-    //vec3 specularColor = vec3(1.0);//, 234.0/255.0, 77.0/255.0);    
-    vec3 specularColor = vec3(165,237,249)/255.;    
-
-    vec3 dayGround = (dayGroundTexture * (PARAM_day_ambient + diff) + (specularColor * specular * mask)) * clouding;
-    vec3 nightGround = nightGroundTexture * vec3(255,246,186)/255.;
+    vec3 dayGround = (dayGroundTexture * (PARAM_day_ambient + diff) + (PARAM_specular_color * specular * mask)) * clouding;
+    vec3 nightGround = nightGroundTexture * PARAM_night_color;
 
     gl_FragColor = vec4(dayGround + nightGround * day_night_mix * PARAM_night_boost, 1.);
-
-//    gl_FragColor = vec4(dayGround, 1.0);
-
-    /*
-    gl_FragColor.rgb = dayGroundTexture;
-
-    if(abs(vPosition.z)>0.01 && abs(vPosition.z)<0.02 && vPosition.x<0.) gl_FragColor.rgb = vec3(1,1,0);
-
-    gl_FragColor.a = 1.0;
-
-    if(abs(vPosition.z)==0.0 && vPosition.x < 0.) {
-    gl_FragColor.rgb = vec3(1,0,0);
-    }
-    */
-
 }
 

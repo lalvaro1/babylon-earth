@@ -1,4 +1,4 @@
-import { ShaderMaterial } from "@babylonjs/core";
+import { ShaderMaterial, Vector3 } from "@babylonjs/core";
 
 export class FloatUniform {
     public value : number;
@@ -16,12 +16,30 @@ export class InteractiveFloatUniforms {
         this.settings = _settings;
     }
 
+    isFloatValue(value) {
+        return typeof value === 'object';
+    }
+
+    colorStrToVec3(str) {
+        const r = parseInt(str.slice(1,3), 16);
+        const g = parseInt(str.slice(3,5), 16);
+        const b = parseInt(str.slice(5,8), 16);
+        
+        return new Vector3(r/255., g/255., b/255.);
+    }
+
     updateShader(material : ShaderMaterial) {
         const uniforms = Object.entries(this.settings);
         
         uniforms.forEach(([key, value]) => {
-            const uniform = value as FloatUniform;
-            material.setFloat(this.prefix + key, uniform.value);          
+
+            if(this.isFloatValue(value)) {
+                const uniform = value as FloatUniform;
+                material.setFloat(this.prefix + key, uniform.value);          
+            }
+            else {
+                material.setVector3(this.prefix + key, this.colorStrToVec3(value));                          
+            }
         });
     }
 
@@ -33,8 +51,20 @@ export class InteractiveFloatUniforms {
         const uniforms = Object.entries(this.settings);
         
         uniforms.forEach(([key, value]) => {
-            const uniform = value as FloatUniform;
-            const controller = uiFolder.add(uniform, "value", uniform.min, uniform.max, uniform.step);        
+
+            var controller;  
+
+            const isFloatValue = typeof value === 'object';
+
+            if(isFloatValue) {
+                const uniform = value as FloatUniform;
+                controller = uiFolder.add(uniform, "value", uniform.min, uniform.max, uniform.step);        
+            }
+            else {
+                console.log("add option : "+key);
+                controller = uiFolder.addColor(this.settings, key);        
+            }
+
             controller.name(key);  
         });
     }

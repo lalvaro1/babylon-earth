@@ -103,16 +103,18 @@ class App {
 
         // ground settings
         var groundOptions = { 
-            specular : { value : 0.20, min : 0, max : 1, step : 0.01 },
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
+            diffuse_power : { value : 1., min : 0.25, max : 2, step : 0.01 },                                                
+            specular : { value : 0.20, min : 0, max : 1, step : 0.01 },
             specular_power : { value : 3.5, min : 1., max : 15, step : 0.005 },                        
-            diffuse_power : { value : 1., min : 0.25, max : 2, step : 0.01 },                                    
-            day_ambient : { value : 0.2, min : 0, max : 1, step : 0.01 },            
+            specular_color : "#F0C715",                        
+            day_ambient : { value : 0.11, min : 0, max : 1, step : 0.01 },            
+            cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
+            bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },      
+            night_color : "#F0C715",                        
             night_boost : { value : 0.8, min : 0., max : 2, step : 0.01 },                                    
             night_day_threshold : { value : 0.0, min : 0, max : 0.15, step : 0.005 },            
             night_day_transition : { value : 0.2, min : 0, max : 0.2, step : 0.005 },      
-            cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
-            bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },                        
         };
         const groundUniforms = new InteractiveFloatUniforms(groundOptions);
 
@@ -135,10 +137,10 @@ class App {
             diffuse : { value : 1., min : 0, max : 1, step : 0.01 },            
             specular_power : { value : 12.5, min : 1., max : 50, step : 0.1 },     
             diffuse_threshold : { value : 0.4, min : 0., max : 1, step : 0.005 },                       
-            ambient : { value : 0.18, min : 0, max : 1, step : 0.01 },         
+            ambient : { value : 0.04, min : 0, max : 1, step : 0.01 },         
             meoband : { value : 0.5, min : 0, max : 1, step : 0.01 },   
             normal_cheating_threshold : { value : 0.1, min : 0., max : 1, step : 0.01 },   
-            normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },               
+            normal_cheating_transition : { value : 0.14, min : 0., max : 0.5, step : 0.01 },                           
         };
         const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
 
