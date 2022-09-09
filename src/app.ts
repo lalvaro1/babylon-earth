@@ -77,7 +77,7 @@ class App {
 
         earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
-        earthProceduralMaterial.setTexture("night", new Texture("./textures/night2.jpg", scene));        
+        earthProceduralMaterial.setTexture("night", new Texture("./textures/night5.png", scene));        
         earthProceduralMaterial.setTexture("mask", new Texture("./textures/mask.png", scene));                
 
         // clouds
@@ -86,13 +86,7 @@ class App {
 
         const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
         const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);//, false, true, Texture.BILINEAR_SAMPLINGMODE);    
-        //const scatteringTexture = new Texture("./textures/scattering.png", scene);                
-
-        cloudAlphaTexture.wrapU = Texture.WRAP_ADDRESSMODE;
-        cloudAlphaTexture.wrapV = Texture.WRAP_ADDRESSMODE;        
-        cloudAlphaTexture.wrapR = Texture.WRAP_ADDRESSMODE;    
-
-
+        
         cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
         cloudProceduralMaterial.setTexture("layer2", cloudAlphaTexture);        
         //cloudProceduralMaterial.setTexture("scattering", scatteringTexture);                
@@ -107,12 +101,12 @@ class App {
             diffuse_power : { value : 1., min : 0.25, max : 2, step : 0.01 },                                                
             specular : { value : 0.20, min : 0, max : 1, step : 0.01 },
             specular_power : { value : 3.5, min : 1., max : 15, step : 0.005 },                        
-            specular_color : "#F0C715",                        
+            specular_color : "#FFFFFF",                        
             day_ambient : { value : 0.11, min : 0, max : 1, step : 0.01 },            
             cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
             bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },      
-            night_color : "#F0C715",                        
-            night_boost : { value : 0.8, min : 0., max : 2, step : 0.01 },                                    
+            night_color : "#aa8147",                        
+            night_boost : { value : 2., min : 0., max : 2, step : 0.01 },                                    
             night_day_threshold : { value : 0.0, min : 0, max : 0.15, step : 0.005 },            
             night_day_transition : { value : 0.2, min : 0, max : 0.2, step : 0.005 },      
         };

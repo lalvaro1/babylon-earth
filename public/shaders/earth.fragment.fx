@@ -82,8 +82,13 @@ void main(void) {
     mat4 camMat = transpose(view);
     vec3 lightDir = normalize(sun*100. - vPosition);
 
-    float sun  = clamp(-dot(lightDir, pointNormal), 0.0, 1.0);
-    float diff = pow(max(-dot(lightDir, localNormal), 0.0), PARAM_diffuse_power) * PARAM_diffuse;
+    float sun_p_dot = dot(-lightDir, pointNormal);
+    float sun  = clamp(sun_p_dot, 0.0, 1.0);
+    float diff = pow(clamp(dot(-lightDir, localNormal), 0.0, 1.0), PARAM_diffuse_power) * PARAM_diffuse;
+
+    // earth self shadow
+    float approximateSelfShadow = 1. - smoothstep(0., 0.2, -sun_p_dot);
+    diff *= approximateSelfShadow;
 
     // Ground texture (day/night)
     vec3 dayGroundTexture = texture(diffuse, uv).rgb;
@@ -93,7 +98,7 @@ void main(void) {
 
     // clouds
     vec3 clouds = texture(clouds, uv).rgb;
-    float clouding = 1.0-(clouds.r*PARAM_cloud_shadow);
+    float clouding = 1.0-(clouds.r);//*PARAM_cloud_shadow);
 
     // specular
     float mask = texture(mask, uv).r;
@@ -103,8 +108,10 @@ void main(void) {
     float specular = pow(clamp(dot(reflection, ray), 0.0, 1.0), PARAM_specular_power) * PARAM_specular;
     
     vec3 dayGround = (dayGroundTexture * (PARAM_day_ambient + diff) + (PARAM_specular_color * specular * mask)) * clouding;
-    vec3 nightGround = nightGroundTexture * PARAM_night_color;
+    vec3 nightGround = nightGroundTexture * PARAM_night_color * clouding;
 
     gl_FragColor = vec4(dayGround + nightGround * day_night_mix * PARAM_night_boost, 1.);
+
+    //gl_FragColor = vec4(vec3(diff), 1.);
 }
 
