@@ -20,10 +20,10 @@ export class InteractiveFloatUniforms {
         return typeof value === 'object';
     }
 
-    colorStrToVec3(str) {
-        const r = parseInt(str.slice(1,3), 16);
-        const g = parseInt(str.slice(3,5), 16);
-        const b = parseInt(str.slice(5,8), 16);
+    static colorStrToVec3(colorStr: string) {
+        const r = parseInt(colorStr.slice(1,3), 16);
+        const g = parseInt(colorStr.slice(3,5), 16);
+        const b = parseInt(colorStr.slice(5,8), 16);
         
         return new Vector3(r/255., g/255., b/255.);
     }
@@ -38,7 +38,7 @@ export class InteractiveFloatUniforms {
                 material.setFloat(this.prefix + key, uniform.value);          
             }
             else {
-                material.setVector3(this.prefix + key, this.colorStrToVec3(value));                          
+                material.setVector3(this.prefix + key, InteractiveFloatUniforms.colorStrToVec3(value as string));                          
             }
         });
     }
@@ -61,7 +61,6 @@ export class InteractiveFloatUniforms {
                 controller = uiFolder.add(uniform, "value", uniform.min, uniform.max, uniform.step);        
             }
             else {
-                console.log("add option : "+key);
                 controller = uiFolder.addColor(this.settings, key);        
             }
 

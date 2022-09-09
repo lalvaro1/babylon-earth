@@ -3,7 +3,7 @@ import { InteractiveFloatUniforms } from "./InteractiveFloatUniforms";
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 import "@babylonjs/loaders/glTF";
-import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture, Vector4, ColorSplitterBlock } from "@babylonjs/core";
+import { Engine, Scene, ArcRotateCamera, Vector3, Color4, Mesh, MeshBuilder, ShaderMaterial, Texture, Vector4, GlowLayer, StandardMaterial } from "@babylonjs/core";
 
 function createMaterial(name: string, scene: Scene, customUniforms : string[] = []) {
 
@@ -47,6 +47,7 @@ class App {
         scene.clearColor = new Color4(0, 0, 0, 1);
 
         var earth: Mesh = MeshBuilder.CreateSphere("earth", { diameter: 1 }, scene);
+        var cityLights: Mesh = MeshBuilder.CreateSphere("cityLights", { diameter: 1 }, scene);        
         var clouds: Mesh = MeshBuilder.CreateSphere("clouds", { diameter: 1.020 }, scene);   
         clouds.checkCollisions = true;
 
@@ -57,9 +58,11 @@ class App {
 
         earth.renderingGroupId = 0;
         clouds.renderingGroupId = 1;        
-        scatter.renderingGroupId = 2;                
+        cityLights.renderingGroupId = 2; 
+        scatter.renderingGroupId = 3;                        
         
         clouds.parent = earth;
+        cityLights.parent = earth;
 
         camera.position = new Vector3(0,0.5,-1.);
         camera.wheelPrecision = 200;
@@ -77,8 +80,16 @@ class App {
 
         earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
-        earthProceduralMaterial.setTexture("night", new Texture("./textures/night2.jpg", scene));        
+        earthProceduralMaterial.setTexture("night", new Texture("./textures/night3.png", scene));        
         earthProceduralMaterial.setTexture("mask", new Texture("./textures/mask.png", scene));                
+
+        // city lights
+        var nightProceduralMaterial = new StandardMaterial("cityLights", scene);  
+        nightProceduralMaterial.emissiveTexture = new Texture("./textures/night3.png", scene);
+        cityLights.material = nightProceduralMaterial;
+       
+        var glowLayer = new GlowLayer("glow", scene);
+        glowLayer.addIncludedOnlyMesh(cityLights);
 
         // clouds
         var cloudProceduralMaterial = createMaterial("clouds", scene);  
@@ -86,12 +97,6 @@ class App {
 
         const cloudShadowTexture = new Texture("./textures/clouds_shadow.jpg", scene);
         const cloudAlphaTexture = new Texture("./textures/clouds_alpha.jpg", scene);//, false, true, Texture.BILINEAR_SAMPLINGMODE);    
-        //const scatteringTexture = new Texture("./textures/scattering.png", scene);                
-
-        cloudAlphaTexture.wrapU = Texture.WRAP_ADDRESSMODE;
-        cloudAlphaTexture.wrapV = Texture.WRAP_ADDRESSMODE;        
-        cloudAlphaTexture.wrapR = Texture.WRAP_ADDRESSMODE;    
-
 
         cloudProceduralMaterial.setTexture("layer1", cloudShadowTexture);
         cloudProceduralMaterial.setTexture("layer2", cloudAlphaTexture);        
@@ -107,12 +112,12 @@ class App {
             diffuse_power : { value : 1., min : 0.25, max : 2, step : 0.01 },                                                
             specular : { value : 0.20, min : 0, max : 1, step : 0.01 },
             specular_power : { value : 3.5, min : 1., max : 15, step : 0.005 },                        
-            specular_color : "#F0C715",                        
+            specular_color : "#FFFFFF",                        
             day_ambient : { value : 0.11, min : 0, max : 1, step : 0.01 },            
             cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
             bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },      
-            night_color : "#F0C715",                        
-            night_boost : { value : 0.8, min : 0., max : 2, step : 0.01 },                                    
+            night_color : "#FCDDAF",                        
+            night_boost : { value : 1.13, min : 0., max : 2, step : 0.01 },                                    
             night_day_threshold : { value : 0.0, min : 0, max : 0.15, step : 0.005 },            
             night_day_transition : { value : 0.2, min : 0, max : 0.2, step : 0.005 },      
         };
@@ -144,6 +149,18 @@ class App {
         };
         const cloudUniforms = new InteractiveFloatUniforms(cloudOptions);
 
+        // glow
+        var glowOptions = { 
+            color : "#FCDDAF",
+            intensity : 1,            
+            radius : 5,     
+        };
+
+        glowLayer.customEmissiveColorSelector = function(mesh, subMesh, material, result) {
+            const color = InteractiveFloatUniforms.colorStrToVec3(glowOptions.color);
+            result.set(color.x, color.y, color.z, 1.);
+        }
+
         // general settings
         var generalOptions = { 
             rotationSpeed : 0.02,
@@ -169,6 +186,9 @@ class App {
                 }
             }
         });
+
+       
+
         // run the main render loop
         var time = 0;
 
@@ -198,6 +218,10 @@ class App {
             cloudUniforms.updateShader(cloudProceduralMaterial);
             groundUniforms.updateShader(earthProceduralMaterial);            
 
+            glowLayer.intensity = glowOptions.intensity;
+            glowLayer.blurKernelSize = glowOptions.radius;
+            //glowLayer.colblurKernelSize = glowOptions.radius;
+
             engine.resize();
             scene.render();
         });
@@ -206,6 +230,11 @@ class App {
         const generalFolder = settingsUI.addFolder('General Settings');
         generalFolder.add(generalOptions, 'rotationSpeed', 0, 0.25, 0.01);        
         generalFolder.add(generalOptions, 'sunPosition', -3.1415, 3.1415, 0.01);                
+
+        const glowFolder = settingsUI.addFolder('Glow');
+        glowFolder.add(glowOptions, 'intensity', 0, 10, 0.01);        
+        glowFolder.add(glowOptions, 'radius', 1, 50, 0.01);                
+        glowFolder.addColor(glowOptions, 'color');                
 
         scatterUniforms.addToSettingsFolder(settingsUI.addFolder('Scattering'));
         groundUniforms.addToSettingsFolder(settingsUI.addFolder('Ground'));        
