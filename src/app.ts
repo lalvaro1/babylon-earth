@@ -77,7 +77,7 @@ class App {
 
         earthProceduralMaterial.setTexture("diffuse", earthTexture);
         earthProceduralMaterial.setTexture("normal_map", new Texture("./textures/earth_normal_map.png", scene));        
-        earthProceduralMaterial.setTexture("night", new Texture("./textures/night5.png", scene));        
+        earthProceduralMaterial.setTexture("night", new Texture("./textures/night6.png", scene));        
         earthProceduralMaterial.setTexture("mask", new Texture("./textures/mask.png", scene));                
 
         // clouds
@@ -105,10 +105,12 @@ class App {
             day_ambient : { value : 0.11, min : 0, max : 1, step : 0.01 },            
             cloud_shadow : { value : 0.59, min : 0, max : 1, step : 0.005 },       
             bump : { value : 0.125, min : 0.05, max : 0.5, step : 0.001 },      
-            night_color : "#aa8147",                        
-            night_boost : { value : 2., min : 0., max : 2, step : 0.01 },                                    
+            night_color : "#ebc385",                        
+            night_boost : { value : 1.37, min : 0., max : 2, step : 0.01 },                                    
             night_day_threshold : { value : 0.0, min : 0, max : 0.15, step : 0.005 },            
             night_day_transition : { value : 0.2, min : 0, max : 0.2, step : 0.005 },      
+            glow_attenuation : { value : 0.2, min : 0, max : 1., step : 0.01 },      
+            glow_distance_attenuation : { value : 1., min : 0, max : 5, step : 0.01 },      
         };
         const groundUniforms = new InteractiveFloatUniforms(groundOptions);
 
@@ -141,7 +143,7 @@ class App {
         // general settings
         var generalOptions = { 
             rotationSpeed : 0.02,
-            sunPosition : -1.13,
+            sunPosition : -1.0,
         };
 
         clouds.setEnabled(true);
@@ -185,8 +187,9 @@ class App {
             earth.rotation.y += dt * generalOptions.rotationSpeed;
             time += dt;
 
-            const sunAngle = -camera.alpha+generalOptions.sunPosition;    
-            sun = new Vector3(Math.cos(sunAngle), -0.15, Math.sin(sunAngle));
+            //sun = new Vector3(-Math.cos(camera.alpha+generalOptions.sunPosition), -0.15, -Math.sin(camera.alpha));
+            const sunRotation = camera.alpha+generalOptions.sunPosition;
+            sun = new Vector3(-Math.cos(sunRotation), -0.15, -Math.sin(sunRotation));
 
             scatterUniforms.updateShader(scatterProceduralMaterial);
             cloudUniforms.updateShader(cloudProceduralMaterial);

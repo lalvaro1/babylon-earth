@@ -29,6 +29,8 @@ uniform float PARAM_night_day_threshold;
 uniform float PARAM_night_day_transition;
 uniform float PARAM_cloud_shadow;
 uniform float PARAM_bump;
+uniform float PARAM_glow_attenuation;
+uniform float PARAM_glow_distance_attenuation;
 
 uniform vec3 PARAM_night_color;
 uniform vec3 PARAM_specular_color;
@@ -84,6 +86,10 @@ void main(void) {
 
     float sun_p_dot = dot(-lightDir, pointNormal);
     float sun  = clamp(sun_p_dot, 0.0, 1.0);
+
+    //float sun  = smoothstep(-0.2, 1.0, sun_p_dot);
+
+
     float diff = pow(clamp(dot(-lightDir, localNormal), 0.0, 1.0), PARAM_diffuse_power) * PARAM_diffuse;
 
     // earth self shadow
@@ -108,7 +114,12 @@ void main(void) {
     float specular = pow(clamp(dot(reflection, ray), 0.0, 1.0), PARAM_specular_power) * PARAM_specular;
     
     vec3 dayGround = (dayGroundTexture * (PARAM_day_ambient + diff) + (PARAM_specular_color * specular * mask)) * clouding;
-    vec3 nightGround = nightGroundTexture * PARAM_night_color * clouding;
+
+    const float maxLightingAt = 0.71;
+    float cameraDist = length(cameraPosition - vPosition);
+    float distanceAttenuation = max(1. - cameraDist / PARAM_glow_distance_attenuation * (1. - PARAM_glow_attenuation), 0.);
+
+    vec3 nightGround = nightGroundTexture * PARAM_night_color * clouding * distanceAttenuation;
 
     gl_FragColor = vec4(dayGround + nightGround * day_night_mix * PARAM_night_boost, 1.);
 
